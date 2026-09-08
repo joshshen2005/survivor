@@ -1,0 +1,320 @@
+{
+  "feet_idle": {
+    "frames": [
+      "assets/feet_idle/000.png"
+    ],
+    "width": 132,
+    "height": 155,
+    "fps": 20
+  },
+  "feet_run": {
+    "frames": [
+      "assets/feet_run/000.png",
+      "assets/feet_run/001.png",
+      "assets/feet_run/002.png",
+      "assets/feet_run/003.png",
+      "assets/feet_run/004.png",
+      "assets/feet_run/005.png",
+      "assets/feet_run/006.png",
+      "assets/feet_run/007.png",
+      "assets/feet_run/008.png",
+      "assets/feet_run/009.png",
+      "assets/feet_run/010.png",
+      "assets/feet_run/011.png",
+      "assets/feet_run/012.png",
+      "assets/feet_run/013.png",
+      "assets/feet_run/014.png",
+      "assets/feet_run/015.png",
+      "assets/feet_run/016.png",
+      "assets/feet_run/017.png",
+      "assets/feet_run/018.png",
+      "assets/feet_run/019.png"
+    ],
+    "width": 204,
+    "height": 124,
+    "fps": 20
+  },
+  "feet_walk": {
+    "frames": [
+      "assets/feet_walk/000.png",
+      "assets/feet_walk/001.png",
+      "assets/feet_walk/002.png",
+      "assets/feet_walk/003.png",
+      "assets/feet_walk/004.png",
+      "assets/feet_walk/005.png",
+      "assets/feet_walk/006.png",
+      "assets/feet_walk/007.png",
+      "assets/feet_walk/008.png",
+      "assets/feet_walk/009.png",
+      "assets/feet_walk/010.png",
+      "assets/feet_walk/011.png",
+      "assets/feet_walk/012.png",
+      "assets/feet_walk/013.png",
+      "assets/feet_walk/014.png",
+      "assets/feet_walk/015.png",
+      "assets/feet_walk/016.png",
+      "assets/feet_walk/017.png",
+      "assets/feet_walk/018.png",
+      "assets/feet_walk/019.png"
+    ],
+    "width": 172,
+    "height": 124,
+    "fps": 20
+  },
+  "player_handgun_idle": {
+    "frames": [
+      "assets/player_handgun_idle/000.png",
+      "assets/player_handgun_idle/001.png",
+      "assets/player_handgun_idle/002.png",
+      "assets/player_handgun_idle/003.png",
+      "assets/player_handgun_idle/004.png",
+      "assets/player_handgun_idle/005.png",
+      "assets/player_handgun_idle/006.png",
+      "assets/player_handgun_idle/007.png",
+      "assets/player_handgun_idle/008.png",
+      "assets/player_handgun_idle/009.png",
+      "assets/player_handgun_idle/010.png",
+      "assets/player_handgun_idle/011.png",
+      "assets/player_handgun_idle/012.png",
+      "assets/player_handgun_idle/013.png",
+      "assets/player_handgun_idle/014.png",
+      "assets/player_handgun_idle/015.png",
+      "assets/player_handgun_idle/016.png",
+      "assets/player_handgun_idle/017.png",
+      "assets/player_handgun_idle/018.png",
+      "assets/player_handgun_idle/019.png"
+    ],
+    "width": 253,
+    "height": 216,
+    "fps": 20
+  },
+  "player_handgun_move": {
+    "frames": [
+      "assets/player_handgun_move/000.png",
+      "assets/player_handgun_move/001.png",
+      "assets/player_handgun_move/002.png",
+      "assets/player_handgun_move/003.png",
+      "assets/player_handgun_move/004.png",
+      "assets/player_handgun_move/005.png",
+      "assets/player_handgun_move/006.png",
+      "assets/player_handgun_move/007.png",
+      "assets/player_handgun_move/008.png",
+      "assets/player_handgun_move/009.png",
+      "assets/player_handgun_move/010.png",
+      "assets/player_handgun_move/011.png",
+      "assets/player_handgun_move/012.png",
+      "assets/player_handgun_move/013.png",
+      "assets/player_handgun_move/014.png",
+      "assets/player_handgun_move/015.png",
+      "assets/player_handgun_move/016.png",
+      "assets/player_handgun_move/017.png",
+      "assets/player_handgun_move/018.png",
+      "assets/player_handgun_move/019.png"
+    ],
+    "width": 258,
+    "height": 220,
+    "fps": 20
+  },
+  "player_handgun_shoot": {
+    "frames": [
+      "assets/player_handgun_shoot/000.png",
+      "assets/player_handgun_shoot/001.png",
+      "assets/player_handgun_shoot/002.png"
+    ],
+    "width": 255,
+    "height": 215,
+    "fps": 20
+  },
+  "player_rifle_idle": {
+    "frames": [
+      "assets/player_rifle_idle/000.png",
+      "assets/player_rifle_idle/001.png",
+      "assets/player_rifle_idle/002.png",
+      "assets/player_rifle_idle/003.png",
+      "assets/player_rifle_idle/004.png",
+      "assets/player_rifle_idle/005.png",
+      "assets/player_rifle_idle/006.png",
+      "assets/player_rifle_idle/007.png",
+      "assets/player_rifle_idle/008.png",
+      "assets/player_rifle_idle/009.png",
+      "assets/player_rifle_idle/010.png",
+      "assets/player_rifle_idle/011.png",
+      "assets/player_rifle_idle/012.png",
+      "assets/player_rifle_idle/013.png",
+      "assets/player_rifle_idle/014.png",
+      "assets/player_rifle_idle/015.png",
+      "assets/player_rifle_idle/016.png",
+      "assets/player_rifle_idle/017.png",
+      "assets/player_rifle_idle/018.png",
+      "assets/player_rifle_idle/019.png"
+    ],
+    "width": 313,
+    "height": 207,
+    "fps": 20
+  },
+  "player_rifle_move": {
+    "frames": [
+      "assets/player_rifle_move/000.png",
+      "assets/player_rifle_move/001.png",
+      "assets/player_rifle_move/002.png",
+      "assets/player_rifle_move/003.png",
+      "assets/player_rifle_move/004.png",
+      "assets/player_rifle_move/005.png",
+      "assets/player_rifle_move/006.png",
+      "assets/player_rifle_move/007.png",
+      "assets/player_rifle_move/008.png",
+      "assets/player_rifle_move/009.png",
+      "assets/player_rifle_move/010.png",
+      "assets/player_rifle_move/011.png",
+      "assets/player_rifle_move/012.png",
+      "assets/player_rifle_move/013.png",
+      "assets/player_rifle_move/014.png",
+      "assets/player_rifle_move/015.png",
+      "assets/player_rifle_move/016.png",
+      "assets/player_rifle_move/017.png",
+      "assets/player_rifle_move/018.png",
+      "assets/player_rifle_move/019.png"
+    ],
+    "width": 313,
+    "height": 206,
+    "fps": 20
+  },
+  "player_rifle_shoot": {
+    "frames": [
+      "assets/player_rifle_shoot/000.png",
+      "assets/player_rifle_shoot/001.png",
+      "assets/player_rifle_shoot/002.png"
+    ],
+    "width": 312,
+    "height": 206,
+    "fps": 20
+  },
+  "player_shotgun_idle": {
+    "frames": [
+      "assets/player_shotgun_idle/000.png",
+      "assets/player_shotgun_idle/001.png",
+      "assets/player_shotgun_idle/002.png",
+      "assets/player_shotgun_idle/003.png",
+      "assets/player_shotgun_idle/004.png",
+      "assets/player_shotgun_idle/005.png",
+      "assets/player_shotgun_idle/006.png",
+      "assets/player_shotgun_idle/007.png",
+      "assets/player_shotgun_idle/008.png",
+      "assets/player_shotgun_idle/009.png",
+      "assets/player_shotgun_idle/010.png",
+      "assets/player_shotgun_idle/011.png",
+      "assets/player_shotgun_idle/012.png",
+      "assets/player_shotgun_idle/013.png",
+      "assets/player_shotgun_idle/014.png",
+      "assets/player_shotgun_idle/015.png",
+      "assets/player_shotgun_idle/016.png",
+      "assets/player_shotgun_idle/017.png",
+      "assets/player_shotgun_idle/018.png",
+      "assets/player_shotgun_idle/019.png"
+    ],
+    "width": 313,
+    "height": 207,
+    "fps": 20
+  },
+  "player_shotgun_move": {
+    "frames": [
+      "assets/player_shotgun_move/000.png",
+      "assets/player_shotgun_move/001.png",
+      "assets/player_shotgun_move/002.png",
+      "assets/player_shotgun_move/003.png",
+      "assets/player_shotgun_move/004.png",
+      "assets/player_shotgun_move/005.png",
+      "assets/player_shotgun_move/006.png",
+      "assets/player_shotgun_move/007.png",
+      "assets/player_shotgun_move/008.png",
+      "assets/player_shotgun_move/009.png",
+      "assets/player_shotgun_move/010.png",
+      "assets/player_shotgun_move/011.png",
+      "assets/player_shotgun_move/012.png",
+      "assets/player_shotgun_move/013.png",
+      "assets/player_shotgun_move/014.png",
+      "assets/player_shotgun_move/015.png",
+      "assets/player_shotgun_move/016.png",
+      "assets/player_shotgun_move/017.png",
+      "assets/player_shotgun_move/018.png",
+      "assets/player_shotgun_move/019.png"
+    ],
+    "width": 313,
+    "height": 206,
+    "fps": 20
+  },
+  "player_shotgun_shoot": {
+    "frames": [
+      "assets/player_shotgun_shoot/000.png",
+      "assets/player_shotgun_shoot/001.png",
+      "assets/player_shotgun_shoot/002.png"
+    ],
+    "width": 312,
+    "height": 206,
+    "fps": 20
+  },
+  "zombie_attack": {
+    "frames": [
+      "assets/zombie_attack/000.png",
+      "assets/zombie_attack/001.png",
+      "assets/zombie_attack/002.png",
+      "assets/zombie_attack/003.png",
+      "assets/zombie_attack/004.png",
+      "assets/zombie_attack/005.png",
+      "assets/zombie_attack/006.png",
+      "assets/zombie_attack/007.png",
+      "assets/zombie_attack/008.png"
+    ],
+    "width": 318,
+    "height": 294,
+    "fps": 20
+  },
+  "zombie_idle": {
+    "frames": [
+      "assets/zombie_idle/000.png",
+      "assets/zombie_idle/001.png",
+      "assets/zombie_idle/002.png",
+      "assets/zombie_idle/003.png",
+      "assets/zombie_idle/004.png",
+      "assets/zombie_idle/005.png",
+      "assets/zombie_idle/006.png",
+      "assets/zombie_idle/007.png",
+      "assets/zombie_idle/008.png",
+      "assets/zombie_idle/009.png",
+      "assets/zombie_idle/010.png",
+      "assets/zombie_idle/011.png",
+      "assets/zombie_idle/012.png",
+      "assets/zombie_idle/013.png",
+      "assets/zombie_idle/014.png",
+      "assets/zombie_idle/015.png",
+      "assets/zombie_idle/016.png"
+    ],
+    "width": 241,
+    "height": 222,
+    "fps": 20
+  },
+  "zombie_move": {
+    "frames": [
+      "assets/zombie_move/000.png",
+      "assets/zombie_move/001.png",
+      "assets/zombie_move/002.png",
+      "assets/zombie_move/003.png",
+      "assets/zombie_move/004.png",
+      "assets/zombie_move/005.png",
+      "assets/zombie_move/006.png",
+      "assets/zombie_move/007.png",
+      "assets/zombie_move/008.png",
+      "assets/zombie_move/009.png",
+      "assets/zombie_move/010.png",
+      "assets/zombie_move/011.png",
+      "assets/zombie_move/012.png",
+      "assets/zombie_move/013.png",
+      "assets/zombie_move/014.png",
+      "assets/zombie_move/015.png",
+      "assets/zombie_move/016.png"
+    ],
+    "width": 288,
+    "height": 311,
+    "fps": 20
+  }
+}

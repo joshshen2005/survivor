@@ -1,0 +1,15 @@
+Animated Top Down Survivor Player
+Author: Riley Gombart
+Source: https://opengameart.org/content/animated-top-down-survivor-player
+License: CC BY 3.0
+License URL: https://creativecommons.org/licenses/by/3.0/
+In-game presentation: scaled, rotated, composited with effects.
+
+Animated Top Down Zombie
+Author: Riley Gombart
+Source: https://opengameart.org/content/animated-top-down-zombie
+License: CC0
+License URL: https://creativecommons.org/publicdomain/zero/1.0/
+In-game presentation: scaled, rotated, recolored and composited with effects.
+
+No endorsement by the original artist is implied.
