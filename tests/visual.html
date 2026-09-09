@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<base href="../">
+<title>受击与环境渲染检查</title>
+<style>
+  body{margin:0;background:#15202b;color:#dfeaf2;font:14px system-ui}
+  nav{padding:12px;display:flex;gap:12px;align-items:center}
+  button{padding:10px;background:#344c60;color:white;border:1px solid #88a8bb;border-radius:6px}
+  canvas{display:block;width:100vw;height:calc(100vh - 65px)}
+</style>
+<nav><b>受击静帧检查</b><button id="health">生命受击</button><button id="shield">护盾受击</button><span id="status">加载中</span></nav>
+<canvas id="game"></canvas>
+<script type="module">
+import { Game } from './game.js';
+import { Assets } from './assets.js';
+import { Renderer } from './render.js';
+const g=new Game(), assets=new Assets();
+await assets.load();
+const r=new Renderer(document.getElementById('game'),assets);
+let audio;
+function scene(shield=false, audible=false){
+  g.reset('bastion');g.time=300;
+  for(const [i,type] of ['walker','runner','brute','shield','spitter','bomber','charger','boss','shaman','splitter'].entries()){
+    const angle=i*Math.PI*2/10;
+    g.spawn({type,x:550+Math.cos(angle)*275,y:350+Math.sin(angle)*205});
+  }
+  if(audible){
+    audio ||= new AudioContext(); audio.resume();g.audio=audio;
+  }
+  g.p.shield=shield?50:0;
+  g.hurt(32,{x:g.p.x+100,y:g.p.y-80});
+  g.mode='pause';g.shake=0;
+  document.getElementById('status').textContent=(shield?'护盾命中 · 蓝色方向弧':'生命受伤 · 红色方向弧')+' · '+assets.status;
+}
+document.getElementById('health').onclick=()=>scene(false,true);
+document.getElementById('shield').onclick=()=>scene(true,true);
+scene();
+function draw(){r.draw(g);requestAnimationFrame(draw);}draw();
+</script>
+</html>

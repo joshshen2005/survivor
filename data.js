@@ -116,50 +116,64 @@ export const EVENTS = [
 ];
 
 // 所有连续难度曲线集中在这里。
-// 速度有上限；生命、伤害、精英概率与刷新压力继续增长。
+// 前期留出成型空间，8 分钟后生命增长逐步快于常规升级。
+// 速度、场上数量和精英率封顶，避免靠无法躲避的攻击制造难度。
 export function difficulty(seconds) {
-  const m = seconds / 60;
+  const m = Math.max(0, seconds / 60);
+  const late = Math.max(0, m - 8);
   return {
-    hp: 1 + .70 * m + .12 * m * m,
-    damage: 1 + .17 * m,
-    speed: 1 + Math.min(.5, .055 * m),
-    budget: Math.min(10, 1.65 + .82 * m + .06 * m * m),
-    elite: Math.min(.30, Math.max(0, (m - 1) * .035)),
-    cap: Math.min(150, Math.floor(32 + m * 13))
+    hp: 1 + .58 * m + .09 * m * m + .04 * late * late,
+    damage: 1 + .105 * m,
+    speed: 1 + Math.min(.36, .035 * m),
+    budget: Math.min(8.5, 1.35 + .58 * m + .025 * m * m),
+    elite: Math.min(.22, Math.max(0, (m - 2) * .022)),
+    cap: Math.min(120, Math.floor(28 + m * 9))
   };
 }
 
 export const SHOP = [
   {
-    name: "高能弹药", desc: "攻击 +3", base: 32, growth: 1.55,
+    name: "高能弹药", desc: "攻击 +3", base: 32, growth: .60,
+    value: p => p.damage.toFixed(1),
+    preview: p => (p.damage + 3).toFixed(1),
     valid: () => true,
     apply: p => p.damage += 3
   },
   {
-    name: "快速供弹", desc: "射速 +10%", base: 38, growth: 1.6,
+    name: "快速供弹", desc: "射速 +10%，最高 12 发/秒", base: 38, growth: .70,
+    value: p => p.rate.toFixed(1) + "/秒",
+    preview: p => Math.min(12, p.rate * 1.1).toFixed(1) + "/秒",
     valid: p => p.rate < 12,
     apply: p => p.rate = Math.min(12, p.rate * 1.1)
   },
   {
-    name: "多重枪管", desc: "弹道 +1，最多 6 发", base: 95, growth: 1.9,
+    name: "多重枪管", desc: "弹道 +1，最多 6 发（分摊单发伤害）", base: 95, growth: 1.10,
+    value: p => p.shots + " 发",
+    preview: p => Math.min(6, p.shots + 1) + " 发",
     valid: p => p.shots < 6,
     apply: p => p.shots++
   },
   {
-    name: "生命强化", desc: "上限 +15，恢复 25", base: 42, growth: 1.7,
+    name: "生命强化", desc: "生命上限 +18，恢复 30", base: 42, growth: .65,
+    value: p => p.maxHp.toFixed(0),
+    preview: p => (p.maxHp + 18).toFixed(0),
     valid: () => true,
     apply(p) {
-      p.maxHp += 15;
-      p.hp = Math.min(p.maxHp, p.hp + 25);
+      p.maxHp += 18;
+      p.hp = Math.min(p.maxHp, p.hp + 30);
     }
   },
   {
-    name: "动力靴", desc: "移动 +10，最高 300", base: 38, growth: 1.65,
+    name: "动力靴", desc: "移动 +10，最高 300", base: 38, growth: .70,
+    value: p => p.speed.toFixed(0),
+    preview: p => Math.min(300, p.speed + 10).toFixed(0),
     valid: p => p.speed < 300,
     apply: p => p.speed = Math.min(300, p.speed + 10)
   },
   {
-    name: "精准瞄具", desc: "暴击率 +5%", base: 48, growth: 1.6,
+    name: "精准瞄具", desc: "暴击率 +5%，最高 60%", base: 48, growth: .70,
+    value: p => Math.round(p.crit * 100) + "%",
+    preview: p => Math.round(Math.min(.60, p.crit + .05) * 100) + "%",
     valid: p => p.crit < .60,
     apply: p => p.crit = Math.min(.60, p.crit + .05)
   }

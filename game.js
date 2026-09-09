@@ -26,7 +26,7 @@ export class Game {
       }
     } catch {}
 
-    this.soundOn = false;
+    this.soundOn = true;
     this.audio = null;
     this.reset("assault");
     this.mode = "menu";
@@ -52,6 +52,32 @@ export class Game {
     gain.connect(this.audio.destination);
     o.start(t);
     o.stop(t + duration);
+    o.onended = () => { o.disconnect(); gain.disconnect(); };
+  }
+
+  impactSound(shieldOnly) {
+    if (!this.soundOn || !this.audio) return;
+    const ctx = this.audio, t = ctx.currentTime;
+    const duration = shieldOnly ? .16 : .22;
+    // 短噪声冲击叠加低频重击；护盾使用更清脆的高频。
+    if (!this.impactNoise) {
+      this.impactNoise = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * .25), ctx.sampleRate);
+      const samples = this.impactNoise.getChannelData(0);
+      for (let i = 0; i < samples.length; i++) samples[i] = Math.random() * 2 - 1;
+    }
+    const source = ctx.createBufferSource();
+    const filter = ctx.createBiquadFilter();
+    const gain = ctx.createGain();
+    source.buffer = this.impactNoise;
+    filter.type = shieldOnly ? "highpass" : "lowpass";
+    filter.frequency.setValueAtTime(shieldOnly ? 1800 : 850, t);
+    gain.gain.setValueAtTime(.001, t);
+    gain.gain.linearRampToValueAtTime(shieldOnly ? .07 : .14, t + .006);
+    gain.gain.exponentialRampToValueAtTime(.001, t + duration);
+    source.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+    source.start(t); source.stop(t + duration);
+    source.onended = () => { source.disconnect(); filter.disconnect(); gain.disconnect(); };
+    this.sound(shieldOnly ? 640 : 105, duration, shieldOnly ? .045 : .085);
   }
 
   reset(hero) {
@@ -66,7 +92,7 @@ export class Game {
       coin: 35, xp: 0, level: 1, need: 45,
       shots: 1, pierce: 1, burn: 0, ice: 0, chain: 0,
       blast: 0, leech: 0, gold: 1, revive: 0,
-      shield: 0, inv: 0, buff: 0, muzzle: 0,
+      shield: 0, inv: 0, buff: 0, muzzle: 0, hurtFlash: 0,
       skillCD: 0, cool: 1, skillPower: 1,
       dash: 0, dashCD: 0, dashMax: 3.2, dashA: 0,
       moveA: 0
@@ -97,6 +123,13 @@ export class Game {
     this.spawnCD = .3;
     this.shootCD = 0;
     this.shake = 0;
+    this.damageFlash = 0;
+    this.hitDirection = 0;
+    this.hitShield = false;
+    this.hitStop = 0;
+    this.shopReason = "战术整备";
+    this.shopReturn = "run";
+    this.resumeLeft = 0;
     this.message = "四面来敌 · 注意攻击预警 · Shift 闪避";
     this.messageLife = 5;
     this.mode = "run";
@@ -146,17 +179,45 @@ export class Game {
 
   cost(index) {
     const item = SHOP[index];
-    return Math.floor(item.base * item.growth ** this.shopLevels[index]);
+    if (!item) return Infinity;
+    const level = this.shopLevels[index];
+    // 平滑多项式价格：前几次易于购买，持续堆叠的收益逐渐放缓。
+    return Math.floor(item.base * (1 + item.growth * level + .25 * level ** 2 + .08 * level ** 3));
+  }
+
+  openShop(reason = "战术整备") {
+    if (this.mode !== "run" && this.mode !== "pause") return;
+    this.shopReturn = this.mode;
+    this.shopReason = reason;
+    this.mode = "shop";
+  }
+
+  closeShop() {
+    if (this.mode !== "shop") return;
+    if (this.shopReturn === "pause") this.mode = "pause";
+    else this.mode = "run";
+  }
+
+  resume() {
+    if (this.mode !== "pause") return;
+    this.mode = "resume";
+    this.resumeLeft = 3;
+  }
+
+  updateTransition(dt) {
+    if (this.mode !== "resume") return;
+    this.resumeLeft = Math.max(0, this.resumeLeft - Math.max(0, dt));
+    if (this.resumeLeft === 0) this.mode = "run";
   }
 
   buy(index) {
-    if (this.mode !== "run") return;
+    if (this.mode !== "shop") return false;
     const item = SHOP[index], cost = this.cost(index);
 
-    if (!item.valid(this.p)) return;
+    if (!item || !item.valid(this.p)) return false;
     if (this.p.coin < cost) {
       this.announce("金币不足", 1);
-      return;
+      return false;
     }
 
     this.p.coin -= cost;
@@ -164,6 +225,7 @@ export class Game {
     item.apply(this.p);
     this.spark(this.p.x, this.p.y, "#e7c58f", 16);
     this.sound(700, .12);
+    return true;
   }
 
   useSkill() {
@@ -195,16 +257,30 @@ export class Game {
     if (this.mode !== "run" || this.p.inv > 0) return;
     const p = this.p;
 
-    let value = amount * (1 - p.armor);
+    let value = Math.max(0, amount * (1 - p.armor));
+    if (value <= 0) return;
     const blocked = Math.min(p.shield, value);
     p.shield -= blocked;
     value -= blocked;
     p.hp -= value;
-    p.inv = .24;
-    this.shake = 5;
-
-    this.spark(p.x, p.y, blocked >= amount ? "#b2e4ff" : "#d9847b", 12);
-    this.sound(80, .13, .04);
+    const shieldOnly = value <= .001;
+    p.inv = .55;
+    p.hurtFlash = .22;
+    this.hitShield = shieldOnly;
+    this.damageFlash = shieldOnly ? .65 : 1;
+    this.hitDirection = source
+      ? Math.atan2(source.y - p.y, source.x - p.x) : p.a + Math.PI;
+    this.hitStop = shieldOnly ? .035 : .065;
+    this.shake = shieldOnly ? 3 : Math.min(9, 4 + value * .12);
+    const color = shieldOnly ? "#a3e8ff" : "#ff8276";
+    this.spark(p.x, p.y, color, shieldOnly ? 18 : 26);
+    this.ring(p.x, p.y, shieldOnly ? 48 : 38, color);
+    this.effects.push({
+      kind: "damageText", x: p.x, y: p.y - 38,
+      text: shieldOnly ? `护盾 −${Math.ceil(blocked)}` : `−${Math.ceil(value)}`,
+      color, life: .85, max: .85
+    });
+    this.impactSound(shieldOnly);
 
     if (p.hp <= 0) {
       if (p.revive > 0) {
@@ -298,7 +374,10 @@ export class Game {
     while (this.p.xp >= this.p.need) {
       this.p.xp -= this.p.need;
       this.p.level++;
-      this.p.need = Math.round(45 * this.p.level ** 1.2);
+      this.p.need = Math.round(45 * this.p.level ** 1.12);
+      this.p.damage *= 1.01;
+      this.p.maxHp += 2;
+      this.heal(8);
       this.pending++;
     }
   }
@@ -363,7 +442,8 @@ export class Game {
       hp: maxHp, maxHp,
       speed: m.speed * d.speed * (elite ? 1.1 : 1),
       damage: m.damage * d.damage * (elite ? 1.2 : 1),
-      coin: m.coin * (elite ? 2.2 : 1), xp: m.xp * (elite ? 2 : 1),
+      coin: m.coin * (elite ? 2.2 : 1) * (1 + Math.min(.6, this.time / 60 * .035)),
+      xp: m.xp * (elite ? 2 : 1),
       elite, cool: .6, action: null, charge: null,
       hit: 0, slow: 0, burn: 0, burnDps: 0, dead: false
     });
@@ -381,16 +461,18 @@ export class Game {
     }
 
     // Boss 不因普通怪达到数量上限而永久漏刷。
-    if (this.time >= this.nextBoss && this.warnings.length < 24) {
+    const bossPresent = this.enemies.some(e => e.type === "boss" && !e.dead) ||
+      this.warnings.some(w => w.type === "boss");
+    if (this.time >= this.nextBoss && !bossPresent && this.warnings.length < 24) {
       if (this.edgeSpawn("boss")) {
-        this.nextBoss += 120;
+        this.nextBoss = this.time + 120;
         this.announce("灾厄暴君正在接近", 4);
       }
     }
 
     const population = this.enemies.length + this.warnings.length;
     if (population < d.cap) {
-      this.budget = Math.min(12, this.budget + d.budget * this.event.spawn * dt);
+      this.budget = Math.min(12, this.budget + d.budget * this.event.spawn * (bossPresent ? .7 : 1) * dt);
     }
 
     this.spawnCD -= dt;
@@ -437,12 +519,17 @@ export class Game {
   update(dt) {
     if (this.mode !== "run") return;
     const p = this.p;
+    if (this.hitStop > 0) {
+      this.hitStop = Math.max(0, this.hitStop - dt);
+      return;
+    }
 
     this.time += dt;
+    this.damageFlash = Math.max(0, this.damageFlash - dt * 2.5);
     this.messageLife = Math.max(0, this.messageLife - dt);
     this.shake = Math.max(0, this.shake - dt * 22);
 
-    for (const key of ["inv", "buff", "muzzle", "skillCD", "dashCD"]) {
+    for (const key of ["inv", "buff", "muzzle", "hurtFlash", "skillCD", "dashCD"]) {
       p[key] = Math.max(0, p[key] - dt);
     }
 
@@ -500,7 +587,7 @@ export class Game {
       );
       const hit = Number.isFinite(t);
 
-      if (hit) this.hurt(b.damage);
+      if (hit) this.hurt(b.damage, { x: ox, y: oy });
 
       if (b.life <= 0 || hit) {
         if (b.acid) {
@@ -530,7 +617,7 @@ export class Game {
       zone.tick += .5;
 
       if (zone.kind === "acid") {
-        if (dist(zone, p) < zone.r + p.r) this.hurt(zone.power * .35);
+        if (dist(zone, p) < zone.r + p.r) this.hurt(zone.power * .35, zone);
       } else {
         if (dist(zone, p) < zone.r) this.heal(2 * zone.power);
         this.area(zone.x, zone.y, zone.r, 9 * zone.power);

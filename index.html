@@ -22,31 +22,29 @@ button:hover:not(:disabled){background:#304252}
 button.primary{background:#d2a86e;color:#201b15;font-weight:800}
 #app{
   height:100dvh;max-width:1600px;margin:auto;display:grid;
-  grid-template-rows:66px minmax(0,1fr) 25px
+  grid-template-rows:76px minmax(0,1fr) 25px
 }
 header{
-  display:flex;gap:22px;align-items:center;padding:10px 18px;
+  display:flex;gap:16px;align-items:center;padding:9px 16px;
   background:linear-gradient(90deg,#17212c,#0d141e);
   border-bottom:1px solid #ffffff12
 }
 .brand{color:#f2d5a6;font-size:19px;font-weight:900;white-space:nowrap}
-#hud{flex:1;font-size:13px;color:#adbfce;line-height:1.7}
+#hud{flex:1;min-width:160px;display:grid;grid-template-columns:minmax(140px,1.2fr) minmax(120px,1fr);gap:5px 12px}
+.hud-line{display:flex;align-items:center;gap:9px;min-width:0;font-size:12px;color:#adbfce}
+.hud-line.wide{grid-column:1/-1}
+.meter{height:9px;min-width:70px;flex:1;overflow:hidden;border-radius:99px;background:#05080c;border:1px solid #ffffff18}
+.meter i{display:block;height:100%;width:0;transition:width .15s;background:linear-gradient(90deg,#7abb91,#b7e1bf)}
+.meter.xp i{background:linear-gradient(90deg,#6e8fc3,#a9c8ef)}
+.hud-value{font-weight:750;color:#e8f0f6;white-space:nowrap}
+.hud-gold{color:#f2cb82;font-weight:800}.hud-time{color:#d9e6ef;font-variant-numeric:tabular-nums}
 .tools{display:flex;gap:6px}
-#battle{display:grid;grid-template-columns:190px minmax(0,1fr);min-height:0}
-aside{
-  padding:13px 10px;background:#0c131c;border-right:1px solid #ffffff10;
-  overflow:auto
-}
-aside h3{font-size:14px;margin:0 0 11px;color:#dfc49a}
-#shop{display:grid;gap:8px}
-.shop{
-  text-align:left;min-height:66px;padding:10px;
-  background:linear-gradient(130deg,#20303d,#141e2a)
-}
-.shop b{display:block;font-size:13px}
-.shop small{display:block;color:#92abbd;margin-top:5px;font-size:11px}
-.shop em{float:right;color:#f1ce8c;font-style:normal}
-.note{font-size:11px;color:#7c93a6;line-height:1.8;margin-top:12px}
+#prep{position:relative;border-color:#d8b77988;background:linear-gradient(135deg,#77562b,#34291d);color:#ffe1a4;font-weight:900}
+#prep.affordable{box-shadow:0 0 0 2px #e9bd6640,0 0 18px #d99c3f55;animation:pulse 1.8s ease-in-out infinite}
+#prep .dot{display:none;position:absolute;right:-4px;top:-4px;width:9px;height:9px;border-radius:50%;background:#78dda0;box-shadow:0 0 8px #78dda0}
+#prep.affordable .dot{display:block}
+@keyframes pulse{50%{filter:brightness(1.18)}}
+#battle{display:grid;grid-template-rows:minmax(0,1fr);min-height:0}
 #stage{position:relative;min-width:0;min-height:0;background:#090e14}
 #game{display:block;width:100%;height:100%;touch-action:none}
 #message{
@@ -75,12 +73,32 @@ footer{
   backdrop-filter:blur(9px)
 }
 #overlay[hidden]{display:none}
+#overlay.is-resuming{background:#07111b26;backdrop-filter:none;align-items:flex-start;padding-top:86px}
 .panel{
   width:min(930px,98vw);max-height:94dvh;overflow:auto;
   padding:26px;border:1px solid #a9b8c533;border-radius:18px;
   background:linear-gradient(140deg,#202d39,#0e1721);
   box-shadow:0 30px 100px #0009
 }
+.panel.shop-panel{width:min(1040px,98vw)}
+.shop-head{display:flex;align-items:flex-end;justify-content:space-between;gap:15px}
+.shop-balance{color:#f3ce88;font-size:18px;font-weight:900;white-space:nowrap}
+.freeze-note{margin:12px 0 4px;padding:10px 13px;border:1px solid #79a8bd45;border-radius:9px;background:#0b1822;color:#b9d5df;font-size:12px}
+.shop-stats{display:flex;gap:8px 22px;flex-wrap:wrap;margin:14px 0 0;color:#b5c9d8;font-size:12px}
+.shop-stats b{color:#b8e5c5}
+.upgrade-desc{font-size:11px;line-height:1.5;color:#a6bdce;min-height:33px}
+.shop-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin:16px 0}
+.upgrade{position:relative;text-align:left;min-height:142px;padding:14px;background:linear-gradient(145deg,#233442,#121c27);border-color:#ffffff1b}
+.upgrade:hover:not(:disabled){border-color:#d8b779;background:linear-gradient(145deg,#2c4352,#182634)}
+.upgrade h3{margin:3px 0 6px;font-size:16px}.upgrade .key{float:right;color:#829aaa;font-size:11px}
+.upgrade .level{font-size:11px;color:#d2b981}.upgrade .change{margin:11px 0;color:#dceaf1;font-size:13px}
+.upgrade .arrow{color:#79d49c;margin:0 5px}.upgrade .cost{color:#f1ca82;font-weight:850}
+.upgrade .state{display:block;margin-top:7px;font-size:11px;color:#8fa8ba}
+.upgrade.broke .state{color:#e48d84}.upgrade.maxed .state{color:#aab5bd}
+.shop-footer{position:sticky;bottom:-26px;display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;background:#15212c;padding:12px 0;margin-top:8px}
+#shop-feedback{min-height:20px;color:#e7b581;font-size:13px}
+.resume-panel{text-align:center;width:min(360px,90vw);padding:14px;background:#101a24e8}
+.resume-count{font-size:48px;line-height:1;font-weight:950;color:#f2ce91;text-shadow:0 0 30px #e2a74566;margin:8px}
 h1,h2{margin:5px 0 12px}
 h1{font-size:34px}h2{font-size:27px}
 .eyebrow{color:#c7ab7d;font-size:11px;letter-spacing:4px}
@@ -102,24 +120,31 @@ button.card:hover{border-color:#d8b779;background:#ffffff0b}
 .codex canvas{width:78px;height:85px;flex-shrink:0}
 a{color:#bdd7e3}
 @media(max-width:850px){
-  #battle{grid-template-columns:145px minmax(0,1fr)}
   header{gap:10px;padding:8px}
   .brand{font-size:14px}
-  #hud{font-size:11px}
+  #hud{gap:4px 8px}.hud-line{font-size:10px;gap:5px}
   .tools button{padding:7px;font-size:11px}
-  .shop{padding:8px}.shop b{font-size:11px}.shop small{font-size:10px}
   .panel{padding:18px}
+  .shop-footer{bottom:-18px}
+  .shop-grid{grid-template-columns:repeat(2,1fr)}
   .heroes{grid-template-columns:repeat(2,1fr)}
   #actions button{width:62px;height:62px}
 }
 @media(max-width:550px){
-  #app{grid-template-rows:76px minmax(0,1fr) 22px}
-  #battle{grid-template-columns:112px minmax(0,1fr)}
+  #app{grid-template-rows:104px minmax(0,1fr) 20px}
+  header{align-items:flex-start;flex-wrap:wrap;gap:5px}
   .brand{display:none}
+  #hud{order:2;flex-basis:100%;grid-template-columns:1fr 1fr}
+  .tools{margin-left:auto}.tools button{padding:6px 7px}
+  #prep{order:-1}
   .cards,.codex{grid-template-columns:1fr}
+  .shop-grid{grid-template-columns:1fr;gap:8px}.upgrade{min-height:118px}
+  .shop-head{align-items:flex-start}.shop-balance{font-size:15px}
   .heroes{grid-template-columns:repeat(2,1fr)}
   .card{padding:11px}
   .panel{padding:15px}
+  .shop-footer{bottom:-15px}
+  #overlay.is-resuming{padding-top:110px}
   #actions{right:6px;bottom:8px;gap:5px}
   #actions button{width:53px;height:53px;font-size:10px}
 }
@@ -129,30 +154,20 @@ a{color:#bdd7e3}
 <div id="app">
   <header>
     <div class="brand">最后防线 / 黑夜围城</div>
-    <div id="hud">正在初始化……</div>
+    <div id="hud">
+      <div class="hud-line"><span class="hud-value" id="hp-label">生命 --</span><span class="meter"><i id="hp-fill"></i></span></div>
+      <div class="hud-line"><span class="hud-value" id="level-label">Lv.--</span><span class="meter xp"><i id="xp-fill"></i></span></div>
+      <div class="hud-line wide"><span class="hud-gold" id="coin-label">金币 --</span><span class="hud-time" id="time-label">00:00</span><span id="battle-label">正在初始化……</span></div>
+    </div>
+    <button id="prep">整备 <u>B</u><span class="dot"></span></button>
     <div class="tools">
-      <button id="audio">音效：关</button>
+      <button id="audio">音效：开</button>
       <button id="codex">图鉴</button>
       <button id="pause">暂停</button>
     </div>
   </header>
 
   <div id="battle">
-    <aside>
-      <h3>战地补给</h3>
-      <div id="shop"></div>
-      <div class="note">
-        金币升级不会暂停战斗。<br>
-        WASD：移动<br>
-        Shift：闪避<br>
-        Q / E：角色技能<br>
-        按住鼠标右键：手动瞄准<br>
-        空格：暂停<br><br>
-        手机使用左下摇杆。<br>
-        建议横屏游玩。
-      </div>
-    </aside>
-
     <main id="stage">
       <canvas id="game"></canvas>
       <div id="message"></div>

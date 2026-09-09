@@ -1,0 +1,13 @@
+{
+  "name": "survivor-nightfall",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "description": "最后防线 · 黑夜围城：浏览器俯视角生存游戏",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "node --test tests/game.test.mjs && node scripts/check-assets.mjs",
+    "check:assets": "node scripts/check-assets.mjs",
+    "test:balance": "node tests/balance-smoke.mjs"
+  }
+}

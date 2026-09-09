@@ -16,6 +16,7 @@ let stickId = null;
 let savedMode = "menu";
 let lastUI = "";
 let audioContext = null;
+let shopFeedback = "";
 
 const clock = time =>
   `${Math.floor(time / 60).toString().padStart(2, "0")}:` +
@@ -68,7 +69,9 @@ function syncOverlay() {
   lastUI = signature;
 
   $("overlay").hidden = mode === "run";
-  $("pause").textContent = mode === "pause" ? "继续" : "暂停";
+  $("overlay").classList.toggle("is-resuming", mode === "resume");
+  $("app").inert = mode !== "run";
+  $("pause").textContent = mode === "pause" ? "继续" : mode === "resume" ? "取消恢复" : "暂停";
 
   if (mode === "run") return;
   clearInput();
@@ -96,7 +99,8 @@ function syncOverlay() {
         ${assets.status}<br>
         最高得分：${game.save.best}<br>
         WASD 移动 · Shift 闪避 · Q/E 技能 ·
-        按住鼠标右键手动瞄准 · 空格暂停
+        按住鼠标右键手动瞄准 · 空格暂停 · B 整备加点<br>
+        按 B 手动整备，退出立即继续战斗；仅从暂停继续时倒计时 3 秒。
       </p>
       <div class="row"><button data-action="codex">怪物图鉴</button></div>
       ${credits}
@@ -118,6 +122,7 @@ function syncOverlay() {
       <p class="muted">${buildText()}</p>
       <div class="row">
         <button class="primary" data-action="resume">继续战斗</button>
+        <button data-action="shop">整备加点 · B</button>
         <button data-action="codex">怪物图鉴</button>
         <button data-action="finish">结束本局</button>
       </div>
@@ -125,11 +130,45 @@ function syncOverlay() {
     `;
   }
 
+  if (mode === "shop") {
+    shopFeedback = "";
+    $("panel").className = "panel shop-panel";
+    $("panel").innerHTML = `
+      <div class="shop-head">
+        <div><div class="eyebrow">FIELD WORKSHOP</div><h2>${(game.shopReason || "战术整备").split(" · ")[0]}</h2></div>
+        <div class="shop-balance" id="shop-balance"></div>
+      </div>
+      <div class="freeze-note">整备期间战场暂停，退出立即继续战斗。可按 B 或 Esc 退出。</div>
+      <div class="shop-stats" id="shop-stats"></div>
+      <div class="shop-grid" id="shop-grid">
+        ${SHOP.map((item, i) => `<button class="upgrade" data-shop="${i}"></button>`).join("")}
+      </div>
+      <div class="shop-footer">
+        <span id="shop-feedback" role="status"></span>
+        <button class="primary" data-action="close-shop">${game.shopReturn === "pause" ? "返回暂停" : "继续战斗 · B"}</button>
+      </div>`;
+    updateShopPanel();
+  } else {
+    $("panel").className = "panel";
+  }
+
+  if (mode === "resume") {
+    $("panel").className = "panel resume-panel";
+    $("panel").innerHTML = `
+      <div class="eyebrow">RETURNING TO BATTLE</div>
+      <div class="resume-count" id="resume-count">${Math.max(1, Math.ceil(game.resumeLeft || 3))}</div>
+      <div>准备恢复战斗</div>
+      <p class="muted">观察敌人位置，准备移动 · 战场仍冻结</p>
+      <button data-action="cancel-resume">取消恢复 · Esc</button>`;
+  }
+
   if (mode === "draft") {
     $("panel").innerHTML = `
       <div class="eyebrow">FIELD ADAPTATION</div>
       <h2>选择战场强化</h2>
-      <p class="muted">等级 ${game.p.level} · 剩余 ${game.pending} 次选择 · 战斗已暂停</p>
+      <p class="muted">等级 ${game.p.level} · 剩余 ${game.pending} 次选择 · 战斗已暂停<br>
+        每次角色升级自动获得：攻击 +1% · 生命上限 +2 · 恢复 8 生命<br>
+        选完立即继续战斗，需要购买属性时按 B。Boss 额外强化不重复发放升级成长。</p>
       <div class="cards">
         ${game.choices.map((r, i) => `
           <button class="card" data-pick="${i}">
@@ -190,8 +229,8 @@ function syncOverlay() {
 }
 
 function openCodex() {
-  if (game.mode === "draft" || game.mode === "codex") return;
-  savedMode = game.mode;
+  if (!["menu", "run", "pause", "over"].includes(game.mode)) return;
+  savedMode = game.mode === "run" ? "pause" : game.mode;
   game.persist();
   setMode("codex");
 }
@@ -201,8 +240,81 @@ function pause() {
     game.persist();
     setMode("pause");
   } else if (game.mode === "pause") {
-    setMode("run");
+    clearInput();
+    game.resume();
+    lastUI = "";
+    syncOverlay();
+  } else if (game.mode === "resume") {
+    setMode("pause");
   }
+}
+
+function toggleShop() {
+  if (game.mode === "shop") {
+    shopFeedback = "";
+    clearInput();
+    game.closeShop();
+    lastUI = "";
+    syncOverlay();
+  } else if (game.mode === "run" || game.mode === "pause") {
+    clearInput();
+    game.openShop();
+    shopFeedback = "";
+    lastUI = "";
+    syncOverlay();
+  }
+}
+
+function itemValue(item, p, preview = false) {
+  const fn = preview ? item.preview : item.value;
+  if (typeof fn === "function") return fn(p);
+  return preview ? item.desc : "当前属性";
+}
+
+function updateShopPanel() {
+  if (game.mode !== "shop") return;
+  const p = game.p;
+  const balance = $("shop-balance");
+  if (balance) balance.textContent = `金币 ${Math.floor(p.coin)}`;
+  $("shop-stats").innerHTML = `<span>${HEROES[p.hero].name} · Lv.${p.level}</span>
+    <span>生命 <b>${Math.ceil(p.hp)} / ${p.maxHp}</b></span>
+    <span>护盾 ${Math.ceil(p.shield)} · 减伤 ${Math.round(p.armor * 100)}%</span>
+    <span>穿透 ${p.pierce} · 技能冷却 ${Math.ceil(p.skillCD)}s</span>`;
+  $("shop-grid")?.querySelectorAll("[data-shop]").forEach(button => {
+    const index = Number(button.dataset.shop);
+    const item = SHOP[index];
+    const valid = item.valid(p);
+    const cost = game.cost(index);
+    const affordable = p.coin >= cost;
+    button.disabled = false;
+    button.setAttribute("aria-disabled", String(!valid));
+    button.classList.toggle("broke", valid && !affordable);
+    button.classList.toggle("maxed", !valid);
+    button.innerHTML = `
+      <span class="key">数字 ${index + 1}</span>
+      <span class="level">等级 ${game.shopLevels[index]}</span>
+      <h3>${item.name}</h3>
+      <div class="upgrade-desc">${item.desc}</div>
+      <div class="change">${itemValue(item, p)}${valid ? `<span class="arrow">→</span>${itemValue(item, p, true)}` : ""}</div>
+      <span class="cost">${valid ? `费用 ${cost}` : "已满级"}</span>
+      <span class="state">${!valid ? "该项已达到上限" : affordable ? "可购买 · 可连续点击" : `金币不足，还差 ${cost - Math.floor(p.coin)}`}</span>`;
+  });
+  const feedback = $("shop-feedback");
+  if (feedback) feedback.textContent = shopFeedback;
+}
+
+function buyShop(index) {
+  if (game.mode !== "shop") return;
+  const item = SHOP[index];
+  if (!item) return;
+  const cost = game.cost(index);
+  if (!item.valid(game.p)) shopFeedback = `${item.name} 已满级`;
+  else if (game.p.coin < cost) shopFeedback = `金币不足：${item.name} 还差 ${cost - Math.floor(game.p.coin)}`;
+  else {
+    game.buy(index);
+    shopFeedback = `已购买 ${item.name} · 当前等级 ${game.shopLevels[index]}`;
+  }
+  updateShopPanel();
 }
 
 function unlockAudio() {
@@ -210,7 +322,7 @@ function unlockAudio() {
   try {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!audioContext && AC) audioContext = new AC();
-    audioContext?.resume();
+    audioContext?.resume().catch(() => {});
     game.audio = audioContext;
   } catch {}
 }
@@ -234,8 +346,16 @@ $("panel").addEventListener("click", event => {
     return;
   }
 
+  if (button.dataset.shop !== undefined) {
+    buyShop(Number(button.dataset.shop));
+    return;
+  }
+
   const action = button.dataset.action;
-  if (action === "resume") setMode("run");
+  if (action === "resume") pause();
+  if (action === "shop") toggleShop();
+  if (action === "cancel-resume") pause();
+  if (action === "close-shop") toggleShop();
   if (action === "codex") openCodex();
   if (action === "back") setMode(savedMode);
   if (action === "menu") setMode("menu");
@@ -245,19 +365,9 @@ $("panel").addEventListener("click", event => {
   }
 });
 
-$("shop").innerHTML = SHOP.map((item, i) => `
-  <button class="shop" data-shop="${i}">
-    <b>${item.name}<em></em></b><small>${item.desc}</small>
-  </button>
-`).join("");
-
-$("shop").addEventListener("click", event => {
-  const button = event.target.closest("[data-shop]");
-  if (button) game.buy(Number(button.dataset.shop));
-});
-
 $("pause").onclick = pause;
 $("codex").onclick = openCodex;
+$("prep").onclick = toggleShop;
 
 $("audio").onclick = () => {
   game.soundOn = !game.soundOn;
@@ -283,7 +393,11 @@ window.addEventListener("keydown", event => {
     event.preventDefault();
   }
 
-  if (event.repeat && [" ", "shift", "q", "e", "escape"].includes(key)) return;
+  if (key === " " && document.activeElement instanceof HTMLButtonElement) {
+    document.activeElement.blur();
+  }
+
+  if (event.repeat && ([" ", "shift", "q", "e", "escape", "b"].includes(key) || /^[1-6]$/.test(key))) return;
 
   if (game.mode === "draft" && ["1", "2", "3"].includes(key)) {
     game.pick(Number(key) - 1);
@@ -291,13 +405,34 @@ window.addEventListener("keydown", event => {
     return;
   }
 
+  if (game.mode === "shop" && /^[1-6]$/.test(key)) {
+    buyShop(Number(key) - 1);
+    return;
+  }
+
   if (game.mode === "codex" && key === "escape") {
+    clearInput();
     setMode(savedMode);
     return;
   }
 
+  if (key === "b") {
+    toggleShop();
+    return;
+  }
+
   if (key === " " || key === "escape") {
+    if (game.mode === "shop" && key === "escape") {
+      toggleShop();
+      return;
+    }
     pause();
+    return;
+  }
+
+  // 倒计时内可提前按住移动方向，恢复第一帧即可移动。
+  if (game.mode === "resume" && ["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(key)) {
+    keys.add(key);
     return;
   }
 
@@ -374,7 +509,7 @@ canvas.addEventListener("contextmenu", event => event.preventDefault());
 
 function backgroundPause() {
   clearInput();
-  if (game.mode === "run") setMode("pause");
+  if (game.mode === "run" || game.mode === "resume") setMode("pause");
   game.persist();
 }
 
@@ -388,25 +523,20 @@ function updateHUD() {
   const p = game.p;
   const d = difficulty(game.time);
 
-  $("hud").innerHTML = `
-    <span style="color:#a4d2ba">生命 ${Math.ceil(p.hp)}/${p.maxHp}</span>
-    ${p.shield > 0 ? ` · 护盾 ${Math.ceil(p.shield)}` : ""}
-    <span style="color:#e4c18c">　金币 ${Math.floor(p.coin)}</span>
-   　Lv.${p.level}　经验 ${Math.floor(p.xp)}/${p.need}<br>
-    ${clock(game.time)}　击杀 ${game.kills}　${game.event.name}
-   　敌人生命 ×${d.hp.toFixed(1)}
-  `;
+  $("hp-label").textContent = `生命 ${Math.ceil(p.hp)}/${p.maxHp}${p.shield > 0 ? ` +${Math.ceil(p.shield)}` : ""}`;
+  $("hp-fill").style.width = `${clamp(p.hp / p.maxHp * 100, 0, 100)}%`;
+  $("level-label").textContent = `Lv.${p.level}  ${Math.floor(p.xp)}/${p.need}`;
+  $("xp-fill").style.width = `${clamp(p.xp / p.need * 100, 0, 100)}%`;
+  $("coin-label").textContent = `金币 ${Math.floor(p.coin)}`;
+  $("time-label").textContent = clock(game.time);
+  $("battle-label").textContent = `击杀 ${game.kills} · ${game.event.name} · 敌血×${d.hp.toFixed(1)}`;
 
-  $("shop").querySelectorAll("[data-shop]").forEach(button => {
-    const index = Number(button.dataset.shop);
-    const item = SHOP[index];
-    const valid = item.valid(p);
-    const cost = game.cost(index);
-
-    button.querySelector("em").textContent = valid ? "$" + cost : "MAX";
-    button.disabled = game.mode !== "run" || !valid || p.coin < cost;
-    button.title = `已升级 ${game.shopLevels[index]} 次`;
-  });
+  const canBuy = SHOP.some((item, i) => item.valid(p) && p.coin >= game.cost(i));
+  $("prep").classList.toggle("affordable", canBuy && (game.mode === "run" || game.mode === "pause"));
+  $("prep").title = canBuy ? "有可负担的升级" : "打开整备面板 (B)";
+  if (game.mode === "resume" && $("resume-count")) {
+    $("resume-count").textContent = Math.max(1, Math.ceil(game.resumeLeft || 0));
+  }
 
   $("dash").textContent = p.dashCD > 0
     ? `闪避\n${p.dashCD.toFixed(1)}s` : "闪避\nShift";
@@ -420,6 +550,7 @@ function updateHUD() {
 }
 
 await assets.load();
+$("audio").textContent = "音效：" + (game.soundOn ? "开" : "关");
 syncOverlay();
 
 // 固定 60Hz 逻辑更新；暂停时不累计欠下的时间。
@@ -454,6 +585,9 @@ function frame(now) {
     }
 
     if (steps >= 8 || game.mode !== "run") accumulator = 0;
+  } else if (game.mode === "resume") {
+    accumulator = 0;
+    game.updateTransition(realDelta);
   } else {
     accumulator = 0;
   }
